@@ -69,7 +69,7 @@
 <main id="view-home">
   <section class="hero" id="collection">
     <div class="wrap hero-text">
-      <h1>Le temps,<span class="h1b">taillé dans le bois.</span></h1>
+      <h1><span data-c="hero_l1">Le temps,</span><span class="h1b" data-c="hero_l2">taillé dans le bois.</span></h1>
       <div class="rule" aria-hidden="true"><span class="star"></span></div>
     </div>
     <div class="hero-stage">
@@ -82,11 +82,11 @@
     <div class="wrap">
       <div class="rule wide" aria-hidden="true"><span class="star"></span></div>
       <p class="label rv maison">La maison</p>
-      <h2 class="rv"><span class="l1">Huit instruments par an.</span> Chacun pensé pour une seule main.</h2>
+      <h2 class="rv"><span class="l1" data-c="maison_l1">Huit instruments par an.</span> <span data-c="maison_l2">Chacun pensé pour une seule main.</span></h2>
       <div class="figures rv">
-        <div><b>10 ans</b><span>de séchage pour chaque table</span></div>
-        <div><b>180 h</b><span>de travail à l'établi</span></div>
-        <div><b>62</b><span>pièces ajustées à la main</span></div>
+        <div><b data-c="fig1">10 ans</b><span data-c="fig1_txt">de séchage pour chaque table</span></div>
+        <div><b data-c="fig2">180 h</b><span data-c="fig2_txt">de travail à l'établi</span></div>
+        <div><b data-c="fig3">62</b><span data-c="fig3_txt">pièces ajustées à la main</span></div>
       </div>
     </div>
   </section>
@@ -120,7 +120,7 @@
     <div class="wrap">
       <p class="label chap rv"><i>III</i>Composer</p>
       <h2 class="rv">Composez <em>la vôtre.</em></h2>
-      <p class="l rv">Choisissez le modèle, la finition du bois, l'accastillage et le vernis. Voyez l'instrument changer sous vos yeux, puis venez l'essayer à l'atelier.</p>
+      <p class="l rv" data-c="composer_txt">Choisissez le modèle, la finition du bois, l'accastillage et le vernis. Voyez l'instrument changer sous vos yeux, puis venez l'essayer à l'atelier.</p>
       <div class="choices rv"><span>Modèle</span><span>Finition</span><span>Accastillage</span><span>Vernis</span><span>Étui</span></div>
       <a class="btn rv" href="#configurateur"><span class="star"></span>Ouvrir le configurateur</a>
     </div>
@@ -134,8 +134,8 @@
       </div>
       <div>
         <div class="txt rv">
-          <p>Aubier est un atelier de lutherie indépendant. Chaque instrument y est fabriqué de bout en bout par la même personne, sans sous-traitance et sans série.</p>
-          <p>Les bois arrivent bruts et sèchent à l'atelier pendant des années. Chaque table est sondée et amincie à l'oreille, jusqu'à ce qu'elle réponde juste.</p>
+          <p data-c="atelier_p1">Aubier est un atelier de lutherie indépendant. Chaque instrument y est fabriqué de bout en bout par la même personne, sans sous-traitance et sans série.</p>
+          <p data-c="atelier_p2">Les bois arrivent bruts et sèchent à l'atelier pendant des années. Chaque table est sondée et amincie à l'oreille, jusqu'à ce qu'elle réponde juste.</p>
         </div>
         <ol class="process rv">
           <li><span class="w">Semaine 1</span><div><h4>La rencontre</h4><p>Essais, mesures de la main, choix des bois dans le stock de l'atelier.</p></div></li>
@@ -151,7 +151,7 @@
     <div class="wrap">
       <div class="sec-head rv">
         <div><p class="label">Entretien</p><h2>Les instruments qui ont <em>déjà vécu.</em></h2></div>
-        <p>Toutes marques, sur rendez-vous. Diagnostic offert et devis avant toute intervention.</p>
+        <p data-c="entretien_txt">Toutes marques, sur rendez-vous. Diagnostic offert et devis avant toute intervention.</p>
       </div>
       <ul class="svc rv">
         <li><b>Réglage complet</b><span>Sous 48 heures</span><em>65 €</em></li>
@@ -181,9 +181,9 @@
         <p class="label chap"><i>V</i>Rendez-vous</p>
         <h2>Venir <em>à l'atelier.</em></h2>
         <dl>
-          <div><dt>E-mail</dt><dd><span id="mail">bonjour@atelier-aubier.fr</span><button class="copy" data-copy="mail">Copier</button></dd></div>
-          <div><dt>Téléphone</dt><dd><span id="tel">01 23 45 67 89</span><button class="copy" data-copy="tel">Copier</button></dd></div>
-          <div><dt>Horaires</dt><dd>Du mardi au samedi, de 10 h à 18 h</dd></div>
+          <div><dt>E-mail</dt><dd><span id="mail" data-s="email">bonjour@atelier-aubier.fr</span><button class="copy" data-copy="mail">Copier</button></dd></div>
+          <div><dt>Téléphone</dt><dd><span id="tel" data-s="phone">01 23 45 67 89</span><button class="copy" data-copy="tel">Copier</button></dd></div>
+          <div><dt>Horaires</dt><dd data-s="hours">Du mardi au samedi, de 10 h à 18 h</dd></div>
         </dl>
       </div>
       <form class="f rv" id="contact-form" novalidate>
@@ -194,6 +194,7 @@
             <option>Commande sur mesure</option>
             <option>Essayer un modèle à l'atelier</option>
             <option>Entretien ou réparation</option>
+            <option>Liste d'attente</option>
             <option>Autre demande</option>
           </select>
         </div>
@@ -238,7 +239,8 @@
       <div class="cfg-sum">
         <div class="sum-row"><span class="label">Estimation</span><b id="sum-price">—</b></div>
         <div class="sum-row"><span class="label">Délai de fabrication</span><small id="sum-weeks">—</small></div>
-        <div class="sum-row"><span class="label">Acompte à la commande (30 %)</span><small id="sum-deposit">—</small></div>
+        <div class="sum-row"><span class="label">Acompte à la commande (<span id="sum-rate">30</span> %)</span><small id="sum-deposit">—</small></div>
+        <p class="sum-note" id="sum-note" hidden></p>
         <button class="btn" id="sum-order"><span class="star"></span>Commander</button>
         <div class="sum-links"><button id="sum-cta">Réserver une consultation</button><button id="sum-reset">Réinitialiser</button><button id="sum-copy">Copier le récapitulatif</button></div>
       </div>
@@ -250,6 +252,9 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/environments/RoomEnvironment.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="js/config.js"></script>
+<script src="js/catalogue.js"></script>
+<script src="js/data.js"></script>
 <script src="js/main.js"></script>
 
 </body>

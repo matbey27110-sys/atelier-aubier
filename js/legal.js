@@ -18,4 +18,10 @@ $$('[data-back]').forEach(a=>a.addEventListener('click',e=>{
   try{fromSite=!!document.referrer&&new URL(document.referrer).origin===location.origin&&document.referrer!==location.href;}catch(_){}
   if(fromSite&&history.length>1){e.preventDefault();history.back();}
 }));
+/* Textes et coordonnées venant de l'admin, bandeau « congés », statistiques de visite */
+if(window.Aubier){
+  if(document.body.dataset.page)Aubier.setPage(document.body.dataset.page);
+  Aubier.catalogue().then(c=>Aubier.applySite(c),()=>{});
+  Aubier.track('view');Aubier.vitals();
+}
 })();

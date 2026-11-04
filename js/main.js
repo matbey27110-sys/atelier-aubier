@@ -8,75 +8,33 @@ const smooth=(a,b,t)=>{t=clamp((t-a)/(b-a),0,1);return t*t*(3-2*t);};
 
 /* =========================================================
    DONNÉES
+   Le catalogue (modèles, finitions, options, textes de l'anatomie, réglages) vient de
+   l'admin via js/data.js, ou de js/catalogue.js en mode démonstration.
    ========================================================= */
-const SPECS={
-  brume:{name:'Brume',kind:'Guitare folk, format parlor',base:3400,weeks:14,file:'assets/modeles/brume.js',
-    A:{head:[0,.925,.3],nut:[0,.84,.6],neck:[0,.62,.6],body:[0,.36,.9],bridge:[0,.17,.95],center:[0,.5,0]}},
-  nocturne:{name:'Nocturne',kind:'Électrique demi-caisse',base:2900,weeks:12,file:'assets/modeles/nocturne.js',
-    A:{head:[0,.93,.3],nut:[0,.86,.6],neck:[0,.62,.6],body:[0,.28,.9],bridge:[0,.15,.95],knobs:[.5,.16,.95],center:[0,.5,0]}},
-  fonderie:{name:'Fonderie',kind:'Basse, cinq cordes',base:3100,weeks:16,file:'assets/modeles/fonderie.js',
-    A:{head:[0,.93,.3],nut:[0,.86,.6],neck:[0,.6,.6],body:[0,.2,.9],bridge:[0,.09,.95],knobs:[.45,.16,.95],center:[0,.5,0]}}
-};
-/* Finitions : teinte appliquée au bois réel du modèle */
-const FINISH={
-  brume:[
-    {id:'cerise',name:'Cerise ombrée',swatch:'#5a1a10',price:0},
-    {id:'tabac',name:'Tabac ombré',swatch:'#4a2a14',tint:'#6b3a1a',amt:.85,price:250},
-    {id:'ambre',name:'Ambre',swatch:'#a3642a',tint:'#c27a32',amt:.8,price:250},
-    {id:'nuit',name:'Laque Nuit',swatch:'#0d0c0e',lac:'#0d0c0e',price:350}
-  ],
-  nocturne:[
-    {id:'ambre',name:'Érable flammé ambre',wood:'flamme',swatch:'wood:flamme',price:0},
-    {id:'tabac',name:'Érable flammé tabac',wood:'flamme',burst:true,swatch:'wood:flammeb',price:300},
-    {id:'nuit',name:'Laque Nuit',wood:'flamme',lac:'#0c0c0e',swatch:'#0c0c0e',price:300},
-    {id:'bordeaux',name:'Laque Bordeaux',wood:'flamme',lac:'#4a1320',swatch:'#4a1320',price:300},
-    {id:'sapin',name:'Laque Vert sapin',wood:'flamme',lac:'#14302a',swatch:'#14302a',price:300}
-  ],
-  fonderie:[
-    {id:'naturel',name:'Érable échauffé naturel',swatch:'#cdb48c',price:0},
-    {id:'miel',name:'Miel',swatch:'#b07a35',tint:'#c4842e',amt:.6,price:200},
-    {id:'fume',name:'Fumé',swatch:'#4a3a2e',tint:'#4a3528',amt:.85,price:200},
-    {id:'nuit',name:'Laque Nuit',swatch:'#0c0c0e',lac:'#0c0c0e',price:350}
-  ]
-};
-const HARDWARE={nickel:{name:'Nickel',color:'#d0d0cb',rough:.22,price:0},or:{name:'Or mat',color:'#c9a65e',rough:.3,price:260},noir:{name:'Noir satiné',color:'#232325',rough:.4,price:120}};
-const VARNISH={brillant:{name:'Vernis brillant',cc:1,ccr:.04,rough:.32},satine:{name:'Vernis satiné',cc:.35,ccr:.45,rough:.55}};
-const CASES={rigide:{name:'Étui rigide',price:0},cuir:{name:'Étui cuir cognac',price:480}};
-const DEFAULTS={
-  brume:{finish:'cerise',hardware:'or',varnish:'brillant',case:'rigide'},
-  nocturne:{finish:'tabac',hardware:'nickel',varnish:'brillant',case:'rigide'},
-  fonderie:{finish:'naturel',hardware:'nickel',varnish:'satine',case:'rigide'}
-};
-
-/* Récit de l'anatomie */
-const STORY={
-  brume:[
-    {a:'center',d:'fit',az:24,el:6,part:"Vue d'ensemble",t:'Brume',x:'Guitare folk, format parlor.',p:"Une caisse compacte, une voix précise et chaude. Le format parlor se joue contre le corps, au salon comme sur scène, et répond à la moindre attaque des doigts.",s:'Diapason 630 mm · 19 cases · 12 hors caisse'},
-    {a:'head',d:.34,az:-26,el:10,part:'La tête',t:'La tête à fentes',p:"Tête ajourée à l'ancienne, mécaniques à bain d'huile et boutons tournés. La corde passe par le fût, sans contrainte sur le sillet.",s:"Un dessin de tête propre à l'atelier."},
-    {a:'nut',d:.17,az:30,el:22,part:'Le sillet',t:'Le sillet',p:"La pièce qui guide chaque corde. Taillé dans l'os, entaillé au dixième de millimètre pour une justesse parfaite en première position.",s:'Os massif, jamais de plastique.'},
-    {a:'neck',d:.44,az:58,el:8,part:'Le manche',t:'Le manche et la touche',p:"Acajou d'une seule pièce, profil sculpté à la main d'après vos mesures. Touche en palissandre, frettes polies une à une.",s:'Profil en C ou en V, ajusté à votre main.'},
-    {a:'body',d:.36,az:-6,el:18,part:'La table et la rosace',t:'La table',p:"Épicéa massif séché dix ans, teinté à la main en dégradé cerise. Barrage sculpté et accordé au tapotement, jusqu'à ce que la table sonne juste.",s:"Filets et rosace en nacre d'abalone, marquetés à la main."},
-    {a:'bridge',d:.24,az:-28,el:30,part:'Le chevalet',t:'Le chevalet',p:"Palissandre massif et sillet de chevalet compensé, pour une intonation juste sur toute la longueur de la touche.",s:"Chevilles en os, ajustées une à une."},
-    {a:'center',d:'fit',az:172,el:6,part:'Le fond',t:'Le fond et les éclisses',p:"Acajou appairé, vernis appliqué au tampon en quarante passes. Par la rosace, l'étiquette de l'atelier, signée et numérotée.",s:"Chaque instrument porte son numéro."}
-  ],
-  nocturne:[
-    {a:'center',d:'fit',az:24,el:6,part:"Vue d'ensemble",t:'Nocturne',x:'Électrique demi-caisse.',p:"Un corps creux à ouïes pour un son rond et aéré, du jazz au rock clair. Légère à l'épaule, généreuse à l'oreille.",s:'Diapason 628 mm · 22 cases · ouïes en f'},
-    {a:'head',d:.32,az:-26,el:10,part:'La tête',t:'La tête',p:"Placage teinté, mécaniques à démultiplication fine pour une tenue d'accord sans faille.",s:'Fût et boutons dans le métal choisi.'},
-    {a:'neck',d:.44,az:58,el:10,part:'Le manche',t:'Le manche',p:"Manche collé, touche à radius compensé, frettes polies une à une. L'accès reste libre jusqu'aux dernières cases.",s:'Profil sculpté à la main.'},
-    {a:'body',d:.32,az:-10,el:22,part:'Les micros',t:'Les micros',p:"Deux micros double bobinage bobinés à l'atelier, réglés pour garder la voix du bois sous l'amplification.",s:'Chaque bobinage est numéroté et mesuré.'},
-    {a:'bridge',d:.26,az:-30,el:30,part:'Le vibrato',t:'Chevalet et vibrato',p:"Un vibrato à ressort, souple et précis, monté sur un chevalet réglable. Le métal est usiné, puis traité dans la finition que vous choisissez.",s:'Un vibrato qui revient juste.'},
-    {a:'knobs',d:.24,az:26,el:34,part:"L'électronique",t:"L'électronique",p:"Volume et tonalité pour chaque micro, câblage tissé à l'ancienne, condensateurs papier huilé.",s:'Boutons tournés dans le métal choisi.'},
-    {a:'center',d:'fit',az:190,el:6,part:'Le corps',t:'Le corps',p:"Érable flammé sur caisse creuse, filet clair sur tout le contour. La flamme est choisie planche par planche à l'atelier.",s:'Moins de 3,4 kg.'}
-  ],
-  fonderie:[
-    {a:'center',d:'fit',az:24,el:6,part:"Vue d'ensemble",t:'Fonderie',x:'Basse, cinq cordes.',p:"Une basse à cinq cordes taillée pour tenir un groupe entier. Le grave est ferme, l'aigu reste lisible jusqu'en haut du manche.",s:'Diapason 864 mm (34 pouces) · 24 cases'},
-    {a:'head',d:.36,az:-24,el:12,part:'La tête',t:'La tête',p:"Tête compacte, mécaniques allégées. La basse reste équilibrée à la sangle et ne pique jamais du nez.",s:'Un sillet à rouleaux pour une tenue d’accord parfaite.'},
-    {a:'neck',d:.52,az:60,el:10,part:'Le manche',t:'Le manche',p:"Érable et bois sombre en plis contrecollés, renforcés de carbone. Un manche fin qui ne bouge pas, saison après saison.",s:'Profil plat, pensé pour le jeu en slap.'},
-    {a:'body',d:.36,az:-12,el:22,part:'Les micros',t:'Les micros',p:"Deux micros double bobinage et un préampli actif ou passif, commutable selon la scène ou le studio.",s:"Bobinés à l'atelier."},
-    {a:'bridge',d:.26,az:-30,el:30,part:'Le chevalet',t:'Le chevalet',p:"Pontets individuels en laiton massif, réglables corde par corde en hauteur et en longueur.",s:'Un contact franc entre la corde et le bois.'},
-    {a:'center',d:'fit',az:192,el:6,part:'Le corps',t:'Le corps',p:"Érable échauffé : un bois rare, marbré par le temps, choisi pour son dessin. Chaque table est unique et ne se reproduira jamais.",s:'Une table qui porte sa propre signature.'}
-  ]
-};
+let SPECS={},FINISH={},HARDWARE={},VARNISH={},CASES={},DEFAULTS={},STORY={},SET={},SOLD=null,ORDER=[];
+const DEFAULT_A={head:[0,.93,.3],nut:[0,.85,.6],neck:[0,.62,.6],body:[0,.3,.9],bridge:[0,.15,.95],knobs:[.45,.16,.95],center:[0,.5,0]};
+function applyCatalogue(cat){
+  SET=cat.settings||{};SOLD=cat.sold==null?null:+cat.sold;
+  SPECS={};FINISH={};STORY={};DEFAULTS={};HARDWARE={};VARNISH={};CASES={};
+  const opts=(cat.options||[]).filter(o=>o.active!==false).sort((a,b)=>a.position-b.position);
+  const shared=(type,into)=>opts.filter(o=>o.type===type&&!o.model_id).forEach(o=>{into[o.code]=Object.assign({},o.props,{name:o.name,price:o.price||0});});
+  shared('hardware',HARDWARE);shared('varnish',VARNISH);shared('case',CASES);
+  const first=o=>Object.keys(o)[0];
+  ORDER=[];
+  (cat.models||[]).filter(m=>m.visible!==false).sort((a,b)=>a.position-b.position).forEach(m=>{
+    const fins=opts.filter(o=>o.type==='finish'&&o.model_id===m.id).map(o=>Object.assign({},o.props,{id:o.code,name:o.name,price:o.price||0}));
+    if(!fins.length||(!m.file&&!m.glb_url))return;
+    FINISH[m.id]=fins;ORDER.push(m.id);
+    SPECS[m.id]={name:m.name,kind:m.kind||'',base:m.base_price||0,weeks:m.weeks||12,file:m.file,glb:m.glb_url,soldOut:!!m.sold_out,
+      A:m.anchors&&Object.keys(m.anchors).length?m.anchors:DEFAULT_A};
+    STORY[m.id]=m.story&&m.story.length?m.story:[{a:'center',d:'fit',az:24,el:6,part:"Vue d'ensemble",t:m.name,x:m.kind||m.name,p:'',s:''}];
+    const d=m.defaults||{};
+    DEFAULTS[m.id]={finish:fins.some(f=>f.id===d.finish)?d.finish:fins[0].id,hardware:HARDWARE[d.hardware]?d.hardware:first(HARDWARE),
+      varnish:VARNISH[d.varnish]?d.varnish:first(VARNISH),case:CASES[d.case]?d.case:first(CASES)};
+  });
+  if(!ORDER.length)throw new Error('catalogue vide');
+}
+const track=(t,o)=>{if(window.Aubier)Aubier.track(t,o);};
 
 /* =========================================================
    TEXTURES PROCÉDURALES (bois de remplacement, pastilles)
@@ -137,9 +95,11 @@ function canvasTex(c,key){if(TEXC[key])return TEXC[key];const t=new THREE.Canvas
 const LOAD={};
 function loadModel(m){
   if(LOAD[m])return LOAD[m];
+  const S=SPECS[m],t0=performance.now();
   return LOAD[m]=new Promise((res,rej)=>{
     if(!THREE.GLTFLoader){rej(new Error('loader'));return;}
     const build=buffer=>new THREE.GLTFLoader().parse(buffer,'',g=>{
+      track('load3d',{model:m,data:{ms:Math.round(performance.now()-t0)}});
       const s=g.scene;s.updateMatrixWorld(true);
       const b=new THREE.Box3().setFromObject(s),c=b.getCenter(new THREE.Vector3());
       s.position.set(-c.x,-b.min.y,-c.z);
@@ -154,11 +114,11 @@ function loadModel(m){
         delete window.__SILLET_GLB[m];build(buf.buffer);
       };
       if((window.__SILLET_GLB||{})[m]){parse();return;}
-      const sc=document.createElement('script');sc.src=SPECS[m].file;sc.async=true;sc.onload=parse;sc.onerror=()=>rej(new Error('script'));document.head.appendChild(sc);
+      const sc=document.createElement('script');sc.src=S.file;sc.async=true;sc.onload=parse;sc.onerror=()=>rej(new Error('script'));document.head.appendChild(sc);
     };
     /* En ligne : le .glb binaire, environ 25 % plus léger et sans décodage */
-    if(location.protocol.startsWith('http')){
-      fetch(SPECS[m].file.replace(/\.js$/,'.glb')).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(build,fromScript);
+    if(S.glb||location.protocol.startsWith('http')){
+      fetch(S.glb||S.file.replace(/\.js$/,'.glb')).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(build,S.file?fromScript:rej);
     }else fromScript();
   });
 }
@@ -232,9 +192,9 @@ function applyConfig(inst,c){
       mat.clearcoat=V.cc;mat.clearcoatRoughness=V.ccr;mat.roughness=V.rough;
       u.uHw.value.copy(col(H.color));u.uHwAmt.value=1;
     }else if(r==='hw'){
-      mat.map=c.hardware==='nickel'?mat.userData.orig.map:null;
-      mat.color.copy(c.hardware==='nickel'?mat.userData.orig.color:col(H.color));
-      mat.roughness=c.hardware==='nickel'?mat.userData.orig.rough:H.rough;mat.metalness=1;mat.needsUpdate=true;
+      mat.map=H.orig?mat.userData.orig.map:null;
+      mat.color.copy(H.orig?mat.userData.orig.color:col(H.color));
+      mat.roughness=H.orig?mat.userData.orig.rough:H.rough;mat.metalness=1;mat.needsUpdate=true;
     }
   });
 }
@@ -277,12 +237,13 @@ function addShadow(scene,x,w){const m=new THREE.Mesh(new THREE.PlaneGeometry(w||
 /* ---------- Vitrine (accueil) ---------- */
 function initHero(){
   const st=new Stage($('#stage-hero'),{fov:24});if(!st.ok)return;
-  const order=['nocturne','brume','fonderie'],gap=.56,labels=$('#hero-labels'),items=[];
+  const order=[],gap=.56,n=Math.min(ORDER.length,5),labels=$('#hero-labels'),items=[];
+  ORDER.slice(0,n).forEach((id,i)=>{if(i%2)order.unshift(id);else order.push(id);});
   let hover=-1,px=0;const tgt=new THREE.Vector3(0,.62,0),ray=new THREE.Raycaster(),ndc=new THREE.Vector2(),v=new THREE.Vector3();
-  st.onResize=()=>{st.dist=fitDist(st.cam,gap*2+.5,1.35,.1)*1.02;};st.onResize();
+  st.onResize=()=>{st.dist=fitDist(st.cam,gap*Math.max(n-1,1)+.5,1.35,.1)*1.02;};st.onResize();
   st.cam.position.copy(sph(tgt,st.dist,0,4));
   Promise.all(order.map(loadModel)).then(protos=>{
-    protos.forEach((p,i)=>{const m=order[i],g=instance(m,p);applyConfig(g,DEFAULTS[m]);g.wrap.position.x=(i-1)*gap;st.scene.add(g.wrap);addShadow(st.scene,(i-1)*gap,.5);
+    protos.forEach((p,i)=>{const m=order[i],g=instance(m,p);applyConfig(g,DEFAULTS[m]);const x=(i-(n-1)/2)*gap;g.wrap.position.x=x;st.scene.add(g.wrap);addShadow(st.scene,x,.5);
       const lb=document.createElement('button');lb.className='hlabel';lb.innerHTML=`<b>${SPECS[m].name}</b><span>${SPECS[m].kind}</span>`;lb.addEventListener('click',()=>goModel(m));
       lb.addEventListener('mouseenter',()=>hover=i);lb.addEventListener('mouseleave',()=>hover=-1);labels.appendChild(lb);
       g.wrap.userData.model=m;items.push({m,g,rot:Math.sin(i*1.7)*.4,lift:0,lb});});
@@ -305,8 +266,9 @@ function initHero(){
 let anat=null;
 function initAnat(){
   const st=new Stage($('#stage-anat'),{fov:30});anat=st;
+  $('#anat-tabs').innerHTML=ORDER.map((m,i)=>`<button data-m="${m}" aria-pressed="${i===0}">${SPECS[m].name}</button>`).join('');
   $$('#anat-tabs button').forEach(b=>b.addEventListener('click',()=>setAnat(b.dataset.m,false)));
-  if(!st.ok){setAnat('brume',false);return;}
+  if(!st.ok){setAnat(ORDER[0],false);return;}
   st.cp=new THREE.Vector3(0,.6,3);st.ct=new THREE.Vector3(0,.6,0);addShadow(st.scene,0,.55);
   st.update=t=>{
     if(!st.g)return;const P=STORY[st.m],{i,s,act}=scrollState();
@@ -316,7 +278,8 @@ function initAnat(){
     if(act!==st.act){st.act=act;$$('#anat-steps .step').forEach((e,j)=>e.classList.toggle('on',j===act));
       $('#hud-n').textContent=String(act+1).padStart(2,'0');$('#hud-part').textContent=P[act].part;$('#hud-bar').style.setProperty('--p',(act+1)/P.length);}
   };
-  setAnat('brume',false);
+  setAnat(ORDER[0],false);
+  if('IntersectionObserver' in window){const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){io.disconnect();track('anatomie',{model:st.m});}},{threshold:.3});io.observe($('#anatomie'));}
 }
 function resolve(st,p){const t=(st.g.A[p.a]||st.g.A.center).clone();const d=p.d==='fit'?fitDist(st.cam,Math.max(st.g.size.x,st.g.size.z)*1.05,st.g.size.y*1.08,st.g.size.z):p.d;return{t,d,az:p.az,el:p.el};}
 function scrollState(){
@@ -361,7 +324,7 @@ const CFG_KEY='sillet-config-v3';let PER={};
 function validOpts(m,o){return o&&FINISH[m].some(f=>f.id===o.finish)&&HARDWARE[o.hardware]&&VARNISH[o.varnish]&&CASES[o.case];}
 function optsOf(m){const o=PER[m];return validOpts(m,o)?{finish:o.finish,hardware:o.hardware,varnish:o.varnish,case:o.case}:Object.assign({},DEFAULTS[m]);}
 function loadCfg(){
-  let model='brume';
+  let model=ORDER[0];
   try{
     const s=JSON.parse(localStorage.getItem(CFG_KEY)||'null');
     if(s&&s.per){PER=s.per;if(SPECS[s.model])model=s.model;}
@@ -373,8 +336,8 @@ function loadCfg(){
 function saveCfg(){PER[CFG.model]={finish:CFG.finish,hardware:CFG.hardware,varnish:CFG.varnish,case:CFG.case};
   try{localStorage.setItem(CFG_KEY,JSON.stringify({model:CFG.model,per:PER}));}catch(e){}}
 const finOf=c=>FINISH[c.model].find(f=>f.id===c.finish)||FINISH[c.model][0];
-function price(c){return SPECS[c.model].base+finOf(c).price+HARDWARE[c.hardware].price+CASES[c.case].price;}
-function weeks(c){return SPECS[c.model].weeks+(finOf(c).lac?2:0);}
+function price(c){return SPECS[c.model].base+finOf(c).price+HARDWARE[c.hardware].price+(VARNISH[c.varnish].price||0)+CASES[c.case].price;}
+function weeks(c){return SPECS[c.model].weeks+(finOf(c).lac?(SET.lacquer_weeks!=null?+SET.lacquer_weeks:2):0);}
 function summary(c){const S=SPECS[c.model];return[['Modèle',S.name+' — '+S.kind],['Finition',finOf(c).name],['Accastillage',HARDWARE[c.hardware].name],['Vernis',VARNISH[c.varnish].name],['Étui',CASES[c.case].name]];}
 function initConfig(){
   if(cfg)return;CFG=loadCfg();
@@ -413,7 +376,7 @@ function renderPanel(){
   const delta=p=>p?'+ '+euro(p):'Inclus';
   const sec=(title,cur,body,note)=>`<section class="opt"><div class="opt-h"><h3>${title}</h3><span>${cur}</span></div>${body}${note?`<span class="price-d">${note}</span>`:''}</section>`;
   let h='';
-  h+=sec('Modèle',S.kind,`<div class="models-pick">${Object.keys(SPECS).map(m=>`<button class="mp" data-k="model" data-v="${m}" aria-pressed="${m===c.model}"><b>${SPECS[m].name}</b><span>dès ${euro(SPECS[m].base)}</span></button>`).join('')}</div>`);
+  h+=sec('Modèle',S.kind,`<div class="models-pick">${ORDER.map(m=>`<button class="mp" data-k="model" data-v="${m}" aria-pressed="${m===c.model}"><b>${SPECS[m].name}</b><span>${SPECS[m].soldOut?'Complet':'dès '+euro(SPECS[m].base)}</span></button>`).join('')}</div>`);
   h+=sec('Finition',F.name,`<div class="chips">${FINISH[c.model].map(f=>`<button class="chip" data-k="finish" data-v="${f.id}" aria-pressed="${f.id===c.finish}" title="${f.name}" aria-label="${f.name}"><i style="${swatchStyle(f.swatch)}"></i></button>`).join('')}</div>`,delta(F.price));
   h+=sec('Accastillage',HARDWARE[c.hardware].name,`<div class="chips">${Object.keys(HARDWARE).map(k=>{const x=HARDWARE[k];return`<button class="chip" data-k="hardware" data-v="${k}" aria-pressed="${k===c.hardware}" title="${x.name}" aria-label="${x.name}"><i style="background:radial-gradient(circle at 35% 30%,#fff 0%,${x.color} 35%,#111 120%)"></i></button>`;}).join('')}</div>`,delta(HARDWARE[c.hardware].price));
   h+=sec('Vernis',VARNISH[c.varnish].name,`<div class="pills">${Object.keys(VARNISH).map(k=>`<button class="pill" data-k="varnish" data-v="${k}" aria-pressed="${k===c.varnish}">${VARNISH[k].name}</button>`).join('')}</div>`);
@@ -424,22 +387,37 @@ function renderPanel(){
   updateSum();
 }
 function setOpt(k,v){
+  track('choice',{model:k==='model'?v:CFG.model,data:{k,v}});
   if(k==='model'){if(v===CFG.model)return;CFG=Object.assign({model:v},optsOf(v));saveCfg();renderPanel();rebuild(false);return;}
   CFG[k]=v;saveCfg();renderPanel();rebuild(false);
   if(cfg&&cfg.ok&&cfg.g&&k==='finish')view('trois');
   if(cfg&&cfg.ok&&cfg.g&&k==='hardware')view('tete');
 }
-/* Acompte demandé à la commande : 30 % du prix, arrondi à l'euro (à changer ici si besoin) */
-const DEPOSIT_RATE=.3;
-const deposit=c=>Math.round(price(c)*DEPOSIT_RATE);
-function updateSum(){$('#sum-price').textContent=euro(price(CFG));$('#sum-weeks').textContent=weeks(CFG)+' semaines environ';$('#sum-deposit').textContent=euro(deposit(CFG));}
+/* Acompte demandé à la commande : taux réglé dans l'admin (30 % par défaut), arrondi à l'euro */
+const rate=()=>SET.deposit_rate!=null?+SET.deposit_rate:.3;
+const deposit=c=>Math.round(price(c)*rate());
+/* Commande possible ? Sinon le bouton propose la liste d'attente */
+function blocked(){
+  if(SET.orders_open===false)return'Les commandes sont fermées pour le moment.';
+  if(SPECS[CFG.model].soldOut)return'La '+SPECS[CFG.model].name+' est complète pour cette année.';
+  if(SOLD!=null&&SET.capacity&&SOLD>=+SET.capacity)return"L'atelier est complet pour "+new Date().getFullYear()+'.';
+  return'';
+}
+function updateSum(){
+  $('#sum-price').textContent=euro(price(CFG));$('#sum-weeks').textContent=weeks(CFG)+' semaines environ';$('#sum-deposit').textContent=euro(deposit(CFG));
+  $('#sum-rate').textContent=Math.round(rate()*100);
+  const b=blocked(),left=SOLD!=null&&SET.capacity?Math.max(+SET.capacity-SOLD,0):null;
+  $('#sum-order').innerHTML='<span class="star"></span>'+(b?"Rejoindre la liste d'attente":'Commander');
+  const note=$('#sum-note');note.textContent=b||(SET.show_remaining!==false&&left!=null?(left===1?'Plus qu\u2019une place':'Plus que '+left+' places')+' en '+new Date().getFullYear()+'.':'');
+  note.hidden=!note.textContent;
+}
 /* Commande : le configurateur transmet à commande.html un récapitulatif complet (noms, prix, délai).
    En production, le serveur de paiement recalcule le prix à partir de « config » : il ne fait jamais confiance au montant envoyé par le navigateur. */
 function saveOrderDraft(){
   const S=SPECS[CFG.model],F=finOf(CFG),H=HARDWARE[CFG.hardware],C=CASES[CFG.case];
   const draft={config:Object.assign({},CFG),model:S.name,kind:S.kind,swatch:F.swatch&&!F.swatch.startsWith('wood:')?F.swatch:null,
-    lines:[[S.name+' — '+S.kind,S.base],['Finition : '+F.name,F.price],['Accastillage : '+H.name,H.price],['Vernis : '+VARNISH[CFG.varnish].name,0],[C.name,C.price]],
-    total:price(CFG),deposit:deposit(CFG),rate:DEPOSIT_RATE,weeks:weeks(CFG),at:Date.now()};
+    lines:[[S.name+' — '+S.kind,S.base],['Finition : '+F.name,F.price],['Accastillage : '+H.name,H.price],['Vernis : '+VARNISH[CFG.varnish].name,VARNISH[CFG.varnish].price||0],[C.name,C.price]],
+    total:price(CFG),deposit:deposit(CFG),rate:rate(),weeks:weeks(CFG),at:Date.now()};
   try{localStorage.setItem('aubier-commande',JSON.stringify(draft));}catch(e){}
 }
 function sumText(){return summary(CFG).map(([a,b])=>a+' : '+b).join('\n')+'\nEstimation : '+euro(price(CFG))+'\nDélai : '+weeks(CFG)+' semaines environ';}
@@ -452,6 +430,7 @@ function route(){
   $('#view-home').hidden=isCfg;$('#view-config').hidden=!isCfg;$('#rail').hidden=isCfg;
   if(isCfg)$('#nav-cfg').setAttribute('aria-current','page');else $('#nav-cfg').removeAttribute('aria-current');
   if(isCfg){window.scrollTo(0,0);initConfig();}
+  if(isCfg!==route.cfg){route.cfg=isCfg;if(window.Aubier)Aubier.setPage(isCfg?'configurateur':'accueil');if(isCfg||!route.seen){track('view');if(isCfg)track('config');}route.seen=1;}
   else if(h){const el=document.getElementById(h);if(el)requestAnimationFrame(()=>el.scrollIntoView({behavior:'auto'}));}
 }
 function init(){
@@ -475,10 +454,18 @@ function init(){
     if(!f.name.value.trim()){s.textContent='Indiquez votre nom.';f.name.focus();return;}
     if(!okMail(f.email.value)){s.textContent='Indiquez une adresse e-mail valide.';f.email.focus();return;}
     if(!f.message.value.trim()){s.textContent='Écrivez quelques mots sur votre projet.';f.message.focus();return;}
-    s.textContent='Aperçu : le formulaire sera relié à votre messagerie à la mise en ligne.';});
+    if(!window.Aubier){s.textContent='Envoi impossible pour le moment. Écrivez-nous directement par e-mail.';return;}
+    const btn=f.querySelector('button[type=submit]'),wait=f.subject.value==="Liste d'attente";btn.disabled=true;s.textContent='Envoi…';
+    const data={name:f.name.value.trim(),email:f.email.value.trim()};
+    (wait?Aubier.joinWaitlist(Object.assign(data,{model_id:waitModel,note:f.message.value.trim()})):Aubier.sendRequest(Object.assign(data,{subject:f.subject.value,message:f.message.value.trim()})))
+      .then(()=>{f.reset();waitModel=null;s.textContent=(wait?'Vous êtes inscrit sur la liste d\u2019attente. Nous vous écrivons dès qu\u2019une place se libère.':'Merci, votre demande est bien arrivée. Réponse sous 48 heures.')+(Aubier.LIVE?'':' (Démonstration : enregistrée dans ce navigateur, visible dans l\u2019admin.)');})
+      .catch(()=>{s.textContent='Envoi impossible pour le moment. Écrivez-nous directement par e-mail.';})
+      .finally(()=>{btn.disabled=false;});});
 
   $('#sum-cta').addEventListener('click',()=>{$('#c-subject').value='Commande sur mesure';$('#c-msg').value='Bonjour,\n\nJe souhaite échanger autour de cette configuration :\n\n'+sumText();location.hash='rendez-vous';});
-  $('#sum-order').addEventListener('click',()=>{saveOrderDraft();location.href='commande.html';});
+  $('#sum-order').addEventListener('click',()=>{
+    if(blocked()){waitModel=CFG.model;$('#c-subject').value="Liste d'attente";$('#c-msg').value="Bonjour,\n\nJe souhaite être prévenu dès qu'une place se libère pour cette configuration :\n\n"+sumText();location.hash='rendez-vous';return;}
+    track('commander',{model:CFG.model});saveOrderDraft();location.href='commande.html';});
   $('#sum-reset').addEventListener('click',()=>{CFG=Object.assign({model:CFG.model},DEFAULTS[CFG.model]);saveCfg();renderPanel();rebuild(false);});
   $('#sum-copy').addEventListener('click',e=>{const b=e.currentTarget,t=sumText();try{navigator.clipboard.writeText(t).then(()=>{b.textContent='Copié';setTimeout(()=>b.textContent='Copier le récapitulatif',1600);},()=>{});}catch(err){}});
 
@@ -545,6 +532,13 @@ function init(){
   addEventListener('hashchange',route);
   initHero();initAnat();route();
   requestAnimationFrame(loop);
+  if(window.Aubier){Aubier.vitals();
+    /* Le catalogue a changé dans l'admin depuis la dernière visite : on met à jour le configurateur */
+    Aubier.onCatalogue(c=>{try{applyCatalogue(c);Aubier.applySite(c);if(CFG){if(!SPECS[CFG.model])CFG=Object.assign({model:ORDER[0]},optsOf(ORDER[0]));else if(!validOpts(CFG.model,CFG))CFG=Object.assign({model:CFG.model},optsOf(CFG.model));renderPanel();rebuild(false);}}catch(e){}});}
 }
-init();
+let waitModel=null;
+/* Démarrage : catalogue d'abord (instantané s'il est déjà en mémoire), puis le site */
+const builtin=()=>Object.assign({},window.AUBIER_CATALOGUE,{sold:null});
+const boot=c=>{try{applyCatalogue(c&&c.models&&c.models.length?c:builtin());}catch(e){c=builtin();applyCatalogue(c);}if(window.Aubier)Aubier.applySite(c);init();};
+(window.Aubier?Aubier.catalogue():Promise.resolve(null)).then(boot,()=>boot(null));
 })();

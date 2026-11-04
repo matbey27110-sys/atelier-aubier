@@ -4,16 +4,83 @@ ATELIER AUBIER — SITE WEB
 Ouvrir le site
   Double-cliquez sur index.html : il s'ouvre dans votre navigateur.
   Une connexion internet est nécessaire (polices Google Fonts et moteur 3D three.js chargés en ligne).
+  En ligne : https://matbey27110-sys.github.io/atelier-aubier/
+
+Administration
+  Ajoutez /admin à l'adresse du site : https://matbey27110-sys.github.io/atelier-aubier/admin/
+  (en local : ouvrez admin/index.html).
+
+  Tableau de bord   places vendues sur l'année, chiffre d'affaires, encaissements, choses à faire.
+  Performances      visiteurs, provenance, appareils, parcours d'achat, choix populaires du
+                    configurateur, vitesse du site (Core Web Vitals), poids des fichiers, conseils.
+  Commandes         liste, détail, étapes de fabrication, acompte et solde, journal avec photos
+                    visible par le client, factures d'acompte et de solde (impression ou PDF).
+  Planning          frise de l'année, charge de l'atelier, remises à venir.
+  Demandes          messages du formulaire « Rendez-vous », rendez-vous, export vers l'agenda (.ics).
+  Clients           fiches, instruments, garantie, rappels d'entretien, export CSV.
+  Liste d'attente   personnes à prévenir quand une place se libère.
+  Stock de bois     essences, quantités, alertes de stock bas, années de séchage.
+  Modèles           prix, délais, finitions (couleur, teinte, laque), textes de l'anatomie,
+                    caméra, fichier 3D, aperçu en direct du site avant d'enregistrer.
+  Options communes  accastillage, vernis, étuis.
+  Textes du site    phrases de l'accueil, chiffres, paragraphes.
+  Réglages          commandes ouvertes ou fermées, capacité annuelle, taux d'acompte, mode congés
+                    (bandeau sur le site), coordonnées, facturation, comptes de l'administration.
+
+  Côté site, en plus : la page « Suivre ma commande » (suivi.html), la liste d'attente quand
+  l'atelier est complet, et les places restantes affichées dans le configurateur.
+
+DEUX MODES DE FONCTIONNEMENT
+  1. Démonstration (par défaut, js/config.js vide)
+     L'admin s'ouvre sans mot de passe, avec des données fictives.
+     Tout est enregistré dans le navigateur : vos modifications ne sont visibles que sur votre
+     ordinateur, et les visiteurs voient le catalogue de js/catalogue.js.
+
+  2. Réel, avec Supabase (gratuit)
+     Les données sont dans une vraie base, l'admin est protégé par un mot de passe, et chaque
+     modification (prix, finition, texte…) est visible par tous les visiteurs immédiatement.
+
+PASSER EN RÉEL AVEC SUPABASE (une quinzaine de minutes)
+  1. Créez un compte sur https://supabase.com, puis « New project ».
+     Région : Europe (Paris ou Francfort). Notez le mot de passe de la base.
+  2. Ouvrez supabase/schema.sql, remplacez tout en bas « VOTRE-EMAIL@exemple.fr » par votre
+     adresse e-mail, puis copiez tout le fichier.
+     Dans Supabase : SQL Editor > New query > collez > Run. (Le script peut être relancé sans
+     risque : il ne remplace jamais les données déjà saisies.)
+  3. Authentication > Users > Add user > Create new user : la même adresse e-mail et un mot de
+     passe, en cochant « Auto Confirm User ».
+  4. Authentication > Sign In / Providers : décochez « Allow new users to sign up »
+     (personne d'autre ne pourra créer de compte).
+  5. Authentication > URL Configuration > Site URL :
+     https://matbey27110-sys.github.io/atelier-aubier/admin/
+     (pour les liens « mot de passe oublié » et les invitations).
+  6. Project Settings > API : copiez « Project URL » et la clé « anon public » dans js/config.js.
+     Cette clé est faite pour être publique : la sécurité vient des règles du fichier SQL
+     (un visiteur ne peut ni lire les commandes, ni changer un prix, ni devenir administrateur).
+  7. Publiez sur GitHub (git push). C'est prêt : connectez-vous sur /admin.
+
+  Ajouter une personne à l'admin : Réglages > Comptes, puis Supabase > Authentication > Users >
+  Invite user. Rôle « atelier » = tout sauf les réglages et les comptes.
+
+  Bon à savoir : sur l'offre gratuite, Supabase met un projet en pause après une semaine sans
+  aucune visite. Il suffit de le relancer depuis le tableau de bord de Supabase.
 
 Contenu du dossier
   index.html                La structure de la page (accueil, anatomie, configurateur via « Composer »).
-  commande.html             Parcours de commande : coordonnées, acompte de 30 %, confirmation.
+  commande.html             Parcours de commande : coordonnées, acompte, confirmation.
+  suivi.html                « Suivre ma commande » : étapes et photos publiées depuis l'admin.
   cgv.html                  Conditions générales de vente (données fictives).
   mentions-legales.html     Page de mentions légales (données fictives, liée depuis le pied de page).
-  css/style.css             Toute la mise en forme (couleurs, typographie, mise en page).
-  js/main.js                Tout le comportement (3D, anatomie, configurateur, formulaire).
-  js/commande.js            Le parcours de commande (paiement simulé, voir plus bas).
-  js/legal.js               Menu et header des pages secondaires (commande, CGV, mentions légales).
+  admin/                    L'administration (index.html, admin.css, js/).
+  supabase/schema.sql       La base de données : tables, sécurité, calcul des prix, statistiques.
+  css/style.css             Toute la mise en forme du site.
+  js/config.js              Adresse et clé Supabase (vide = démonstration).
+  js/catalogue.js           Le catalogue de départ (modèles, finitions, options, textes, réglages).
+  js/data.js                Le lien entre le site, l'admin et la base ; statistiques anonymes.
+  js/main.js                Le comportement de l'accueil (3D, anatomie, configurateur, formulaire).
+  js/commande.js            Le parcours de commande.
+  js/suivi.js               La page de suivi de commande.
+  js/legal.js               Menu et header des pages secondaires.
   assets/fonts/             La police Blasse (.woff2).
   assets/modeles/*.glb      Les trois guitares 3D, chargées par le site une fois en ligne (format le plus léger).
                             Réutilisables aussi dans Blender, Figma, etc.
@@ -22,22 +89,19 @@ Contenu du dossier
   assets/logo/              Logotype, monogramme A et emblème en SVG.
 
 Mettre en ligne
-  Envoyez tout le dossier tel quel chez votre hébergeur (OVH, Netlify, GitHub Pages…).
-  index.html et les dossiers css/, js/ et assets/ doivent rester côte à côte.
+  Le site est publié par GitHub Pages à chaque « git push » sur la branche main.
+  index.html et les dossiers css/, js/, assets/ et admin/ doivent rester côte à côte.
 
-À compléter avant publication
-  - Police Blasse : chargée depuis assets/fonts/Blasse.woff2 (règle @font-face en haut de
-    css/style.css). Vérifiez que sa licence autorise l'usage web.
-  - Coordonnées, prix et délais : ce sont des exemples à remplacer par ceux de l'atelier.
-  - Formulaire de contact : il valide la saisie mais n'envoie rien. À relier à un service
-    (Formspree, Netlify Forms, ou le back-office de l'hébergeur).
-  - Mentions légales : les informations de mentions-legales.html sont inventées (société, SIRET,
-    hébergeur…). Les remplacer par les vraies et retirer l'encadré « Ce site est une démonstration ».
-  - Paiement : le parcours de commande est en mode démonstration, aucun argent n'est encaissé.
-    Pour encaisser de vrais acomptes : ouvrir un compte Stripe, créer un petit service « /api/checkout »
-    (fonction Netlify ou Vercel) qui recalcule le prix et ouvre une session Stripe Checkout, puis passer
-    DEMO à false en haut de js/commande.js. Les étapes sont détaillées dans ce fichier.
-  - Taux d'acompte : 30 %, réglable avec DEPOSIT_RATE dans js/main.js (et à reporter dans cgv.html).
-  - CGV : texte d'exemple, à faire relire avant toute vente réelle.
+À compléter avant une vraie ouverture
+  - Police Blasse : vérifiez que sa licence autorise l'usage web.
+  - Coordonnées, prix, délais et textes : modifiables dans l'admin (Réglages, Modèles, Textes du site).
+  - Mentions légales et CGV : les informations sont inventées. Les remplacer et retirer les
+    encadrés « démonstration ». Faire relire les CGV avant toute vente réelle.
+  - Paiement : simulé. Les commandes sont bien enregistrées ; l'atelier valide l'acompte dans
+    l'admin (« Marquer reçu »). Pour encaisser par carte : compte Stripe, petite fonction
+    « /api/checkout » qui relit la commande dans la base et ouvre une session Stripe Checkout,
+    puis DEMO à false en haut de js/commande.js (détails dans ce fichier).
+  - E-mails : l'admin prépare les messages (réponse, suivi, rappel d'entretien, liste d'attente)
+    dans votre messagerie. Pour des envois automatiques, ajouter un service comme Brevo ou Resend.
 
 Modèles 3D : BlenderKit, licence « Royalty Free » (usage commercial autorisé). Marques d'origine retirées.

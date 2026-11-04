@@ -1,14 +1,16 @@
 /* =========================================================
    COMMANDE : coordonnées → acompte → confirmation
    Le configurateur dépose un récapitulatif dans le navigateur (clé « aubier-commande »).
+   La commande est enregistrée par Aubier.placeOrder (js/data.js) : avec Supabase, la base
+   RECALCULE le prix et crée la fiche client ; elle apparaît aussitôt dans l'admin.
 
-   MODE DÉMONSTRATION : le paiement est simulé.
+   PAIEMENT : simulé tant que DEMO vaut true (l'atelier valide l'acompte dans l'admin).
    Mise en production avec Stripe :
-   1. Créer un petit service (par ex. fonction Netlify ou Vercel) « /api/checkout » qui reçoit
-      { config, client }, RECALCULE le prix à partir de config (ne jamais utiliser le montant
-      envoyé par le navigateur), crée une session Stripe Checkout et renvoie son url.
-   2. Passer DEMO à false : le bouton « Payer » redirige alors vers la page sécurisée de Stripe,
-      qui revient sur commande.html?ok=1 après paiement.
+   1. Créer un petit service (fonction Supabase, Netlify ou Vercel) « /api/checkout » qui reçoit
+      { ref }, relit la commande dans la base, crée une session Stripe Checkout pour son acompte
+      et renvoie son url. Un webhook Stripe remplit ensuite orders.deposit_paid_at.
+   2. Passer DEMO à false : après l'enregistrement, le bouton « Payer » redirige vers la page
+      sécurisée de Stripe, qui revient sur commande.html?ok=1 après paiement.
    ========================================================= */
 (()=>{
 'use strict';
@@ -38,14 +40,13 @@ $('#t-model').textContent=D.model+' · '+euro(D.total);$('#t-deposit').textConte
 tg.addEventListener('click',()=>{const o=tg.getAttribute('aria-expanded')!=='true';tg.setAttribute('aria-expanded',o);
   tg.querySelector('small').textContent=o?'Masquer le récapitulatif':'Voir le récapitulatif';$('.order-sum').classList.toggle('open',o);});
 
-/* Numéro de commande, gardé si on recharge la page */
-let num=sessionStorage.getItem('aubier-num');
-if(!num){num='AUB-'+new Date().getFullYear()+'-'+String(Math.floor(1000+Math.random()*9000));try{sessionStorage.setItem('aubier-num',num);}catch(e){}}
-$('#wire-ref').textContent=num;
+if(window.Aubier)$('#demo-note').textContent="Mode démonstration : aucun paiement n'est réellement effectué. "+(Aubier.LIVE?"La commande est bien enregistrée dans l'admin de l'atelier.":"La commande est enregistrée dans ce navigateur et visible dans l'admin.");
+const T=(t,o)=>{if(window.Aubier)Aubier.track(t,o);};
 
 /* ---------- Étapes ---------- */
 const go=n=>{
   [1,2,3].forEach(i=>{$('#step-'+i).hidden=i!==n;});
+  if(n===2)T('checkout',{model:D.config&&D.config.model});
   $$('.steps-bar li').forEach(li=>{const s=+li.dataset.step;li.classList.toggle('on',s===n);li.classList.toggle('past',s<n);});
   const top=$('.order-head').getBoundingClientRect().top+scrollY-100;
   if(scrollY>top)scrollTo({top,behavior:reduce?'auto':'smooth'});
@@ -93,18 +94,28 @@ f2.addEventListener('submit',e=>{
   }
   if(!f2.cgv.checked){s.textContent='Acceptez les conditions générales de vente pour continuer.';f2.cgv.focus();return;}
 
-  if(!DEMO){/* Production : redirection vers Stripe Checkout (voir en haut du fichier) */
-    fetch('/api/checkout',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({config:D.config,order:num,client:Object.fromEntries(new FormData(f1))})})
-      .then(r=>r.json()).then(r=>{location.href=r.url;}).catch(()=>{s.textContent='Le paiement est momentanément indisponible. Réessayez dans un instant.';});
-    return;
-  }
-  /* Démonstration : simule le temps de traitement du paiement */
   const btn=$('#pay-btn');btn.disabled=true;btn.classList.add('busy');$('#pay-label').textContent=card?'Paiement en cours…':'Enregistrement…';
-  setTimeout(()=>confirmOrder(card),reduce?0:1400);
+  const fail=msg=>{btn.disabled=false;btn.classList.remove('busy');$('#pay-label').textContent=card?"Payer l'acompte de "+euro(D.deposit):'Confirmer la commande';s.textContent=msg;};
+  if(!window.Aubier){fail("La commande n'a pas pu être enregistrée. Réessayez dans un instant.");return;}
+  const v=k=>(f1[k]&&f1[k].value||'').trim();
+  Aubier.placeOrder({config:D.config,pay:card?'carte':'virement',delivery:f1.delivery.value,notes:v('notes'),
+    client:{first:v('first'),last:v('last'),email:v('email'),tel:v('tel'),street:isLiv()?v('street'):'',zip:isLiv()?v('zip'):'',city:isLiv()?v('city'):''}})
+    .then(r=>{
+      T('order',{model:D.config&&D.config.model,data:{total:r.total}});
+      if(!DEMO&&card){/* Production : redirection vers Stripe Checkout (voir en haut du fichier) */
+        return fetch('/api/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ref:r.ref})})
+          .then(x=>x.json()).then(x=>{location.href=x.url;});
+      }
+      setTimeout(()=>confirmOrder(card,r),reduce?0:900);
+    })
+    .catch(e=>fail((e&&e.message&&!/fetch|network/i.test(e.message)?e.message+' ':'')+'La commande n\u2019a pas pu être enregistrée. Réessayez dans un instant.'));
 });
 
-function confirmOrder(card){
+function confirmOrder(card,r){
+  /* Les montants affichés sont ceux calculés par l'atelier au moment de l'enregistrement */
+  const num=r.ref;D.total=r.total;D.deposit=r.deposit;D.weeks=r.weeks||D.weeks;const balance=r.total-r.deposit;
+  $('#r-total').textContent=euro(r.total);$('#r-deposit').textContent=euro(r.deposit);$('#r-balance').textContent=euro(balance);
+  $('#d-track').href='suivi.html?ref='+encodeURIComponent(num);
   $('#d-num').textContent=num;
   $('#d-title').textContent='Merci, '+f1.first.value.trim()+'.';
   $('#d-lead').textContent=card
@@ -113,7 +124,7 @@ function confirmOrder(card){
   $('#d-weeks').textContent='Environ '+D.weeks+' semaines';
   $('#d-delivery').textContent=isLiv()?'Livraison en main propre à '+f1.city.value.trim()+'.':"Retrait à l'atelier, avec un essai et les derniers réglages.";
   $('#d-balance').textContent=euro(balance);
-  try{localStorage.removeItem('aubier-commande');sessionStorage.removeItem('aubier-num');}catch(e){}
+  try{localStorage.removeItem('aubier-commande');}catch(e){}
   go(3);
 }
 })();

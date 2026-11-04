@@ -1,0 +1,43 @@
+ATELIER AUBIER — SITE WEB
+=========================
+
+Ouvrir le site
+  Double-cliquez sur index.html : il s'ouvre dans votre navigateur.
+  Une connexion internet est nécessaire (polices Google Fonts et moteur 3D three.js chargés en ligne).
+
+Contenu du dossier
+  index.html                La structure de la page (accueil, anatomie, configurateur via « Composer »).
+  commande.html             Parcours de commande : coordonnées, acompte de 30 %, confirmation.
+  cgv.html                  Conditions générales de vente (données fictives).
+  mentions-legales.html     Page de mentions légales (données fictives, liée depuis le pied de page).
+  css/style.css             Toute la mise en forme (couleurs, typographie, mise en page).
+  js/main.js                Tout le comportement (3D, anatomie, configurateur, formulaire).
+  js/commande.js            Le parcours de commande (paiement simulé, voir plus bas).
+  js/legal.js               Menu et header des pages secondaires (commande, CGV, mentions légales).
+  assets/fonts/             La police Blasse (.woff2).
+  assets/modeles/*.glb      Les trois guitares 3D, chargées par le site une fois en ligne (format le plus léger).
+                            Réutilisables aussi dans Blender, Figma, etc.
+  assets/modeles/*.js       Les mêmes modèles en version texte, utilisés quand on ouvre index.html en double-clic
+                            (le navigateur bloque alors les .glb). Garder les deux, ne pas renommer.
+  assets/logo/              Logotype, monogramme A et emblème en SVG.
+
+Mettre en ligne
+  Envoyez tout le dossier tel quel chez votre hébergeur (OVH, Netlify, GitHub Pages…).
+  index.html et les dossiers css/, js/ et assets/ doivent rester côte à côte.
+
+À compléter avant publication
+  - Police Blasse : chargée depuis assets/fonts/Blasse.woff2 (règle @font-face en haut de
+    css/style.css). Vérifiez que sa licence autorise l'usage web.
+  - Coordonnées, prix et délais : ce sont des exemples à remplacer par ceux de l'atelier.
+  - Formulaire de contact : il valide la saisie mais n'envoie rien. À relier à un service
+    (Formspree, Netlify Forms, ou le back-office de l'hébergeur).
+  - Mentions légales : les informations de mentions-legales.html sont inventées (société, SIRET,
+    hébergeur…). Les remplacer par les vraies et retirer l'encadré « Ce site est une démonstration ».
+  - Paiement : le parcours de commande est en mode démonstration, aucun argent n'est encaissé.
+    Pour encaisser de vrais acomptes : ouvrir un compte Stripe, créer un petit service « /api/checkout »
+    (fonction Netlify ou Vercel) qui recalcule le prix et ouvre une session Stripe Checkout, puis passer
+    DEMO à false en haut de js/commande.js. Les étapes sont détaillées dans ce fichier.
+  - Taux d'acompte : 30 %, réglable avec DEPOSIT_RATE dans js/main.js (et à reporter dans cgv.html).
+  - CGV : texte d'exemple, à faire relire avant toute vente réelle.
+
+Modèles 3D : BlenderKit, licence « Royalty Free » (usage commercial autorisé). Marques d'origine retirées.

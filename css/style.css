@@ -748,3 +748,4 @@ h1 em,h2 em,h3 em{font-style:normal}
   .track-pay{text-align:left}
   .track-log article{grid-template-columns:1fr;gap:8px}
 }
+footer.site small.credit{margin-top:-22px;font-size:11px;letter-spacing:.06em}
